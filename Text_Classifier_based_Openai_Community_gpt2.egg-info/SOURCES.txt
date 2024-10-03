@@ -1,0 +1,10 @@
+LICENSE
+README.md
+setup.py
+Text_Classifier_based_Openai_Community_gpt2/__init__.py
+Text_Classifier_based_Openai_Community_gpt2/text_classification_model.py
+Text_Classifier_based_Openai_Community_gpt2.egg-info/PKG-INFO
+Text_Classifier_based_Openai_Community_gpt2.egg-info/SOURCES.txt
+Text_Classifier_based_Openai_Community_gpt2.egg-info/dependency_links.txt
+Text_Classifier_based_Openai_Community_gpt2.egg-info/requires.txt
+Text_Classifier_based_Openai_Community_gpt2.egg-info/top_level.txt

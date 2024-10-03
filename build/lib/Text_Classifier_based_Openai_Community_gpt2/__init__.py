@@ -1,0 +1,2 @@
+# Text_Classifier_based_Openai_Community_gpt2/__init__.py
+from .text_classification_model import TextClassificationModel
