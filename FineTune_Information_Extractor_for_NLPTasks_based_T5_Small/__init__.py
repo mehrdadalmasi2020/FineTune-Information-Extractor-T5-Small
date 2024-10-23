@@ -1,0 +1,2 @@
+# FineTune_Information_Extractor_for_NLPTasks_based_T5_Small/__init__.py
+from .info_extraction import InfoExtractionDataset, InfoExtractionModel
