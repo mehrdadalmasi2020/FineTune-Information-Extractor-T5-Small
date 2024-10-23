@@ -1,15 +1,10 @@
-# Fine-Tune Information Extractor for NLP Tasks based on T5-Small
+# Fine-Tune Information Extractor for NLP Tasks based on mBART
 
-[![Downloads](https://static.pepy.tech/badge/FineTune-Information-Extractor-for-NLPTasks-based-T5-Small)](https://pepy.tech/project/FineTune-Information-Extractor-for-NLPTasks-based-T5-Small)
 
-Fine-Tune Information Extractor for NLP Tasks based on T5-Small is a powerful library designed for fine-tuning the pre-trained `t5-small` model on custom information
- extraction tasks. The library provides an intuitive interface for loading datasets, fine-tuning the T5 model, and exporting results efficiently.
+Fine-Tune Information Extractor for NLP Tasks based on **mBART** is a powerful library designed for fine-tuning the pre-trained `mBART` model on custom information extraction tasks. The library provides an intuitive interface for loading datasets, fine-tuning the mBART model, and exporting results efficiently in multilingual contexts.
 
-In our [Kaggle](https://www.kaggle.com/code/mehrdadal/finetune-information-extractor-t5-small) example, we fine-tuned the model 
-using the [leminda-ai/s2orc_small](https://huggingface.co/datasets/leminda-ai/s2orc_small) dataset to extract key information, such as author names, 
-from academic articles. It is important to note that to achieve efficient performance and faster results, 
-users should leverage high-performance GPUs like the **P100** available on Kaggle. In contrast, using GPUs like the **T4** on platforms such as Google Colab may result
- in slower training times and less efficient fine-tuning, which could affect overall output quality for more demanding tasks.
+To fine-tune the **mBART model** included in this library, please ensure that your system has a **GPU with at least 20GB of memory** (depending on the input training text, memory usage can grow up to 40GB).
+This requirement is necessary for training large models like `facebook/mbart-large-cc25` on moderate to large datasets.
 
 
 ## Table of Contents
@@ -22,29 +17,35 @@ users should leverage high-performance GPUs like the **P100** available on Kaggl
 - [License](#license)
 - [Example Usage](#example-usage)
 
+
 ## Key Features
-- **T5 Fine-tuning**: Fine-tune the `t5-small` model for custom information extraction tasks.
-- **Customizable Task Instructions**: Supports flexible task instructions (e.g., "Extract Authors", "Extract Keywords").
-- **Text Preprocessing**: Combines and tokenizes multiple text columns for input into the model.
-- **GPU Support**: Utilizes GPU acceleration for faster training.
+- **mBART Fine-tuning**: Fine-tune the `mBART` model for custom multilingual information extraction tasks.
+- **Customizable Task Instructions**: Supports flexible task instructions (e.g., "Extract Authors", "Extract Keywords") across multiple languages.
+- **Text Preprocessing**: Combines and tokenizes multiple text columns for input into the model, optimized for multilingual data.
+- **GPU Support**: Utilizes GPU acceleration for faster training, with performance gains for large multilingual datasets.
+
 
 ## Quick Start
-The primary interface for interacting with this library is the `InfoExtractionModel` class, which allows you to load data, fine-tune the model, and generate output for a given input text.
+The primary interface for interacting with this library is the `InfoExtractionModel` class, which allows you to load data, fine-tune the mBART model, and generate output for a given input text. The model supports multilingual information extraction tasks and can be fine-tuned with minimal configuration.
 
 ## Fine-tuning the Model
-To fine-tune the `t5-small` model, you need to prepare three datasets: one for training, and one for evaluation. These files should be provided in Excel or CSV format. 
-The process involves selecting the correct text column and target information column for information extraction.
+To fine-tune the `mBART` model, you need to prepare three datasets: one for training, one for evaluation, and optionally one for testing. These files should be provided in Excel or CSV format. 
+The process involves selecting the correct text column and target information column for information extraction. Since mBART is a multilingual model, you can specify the language of your dataset (e.g., French, German) and ensure that the corresponding language codes are used during the fine-tuning process.
 
-### 1. Prepare Train, Evaluation, and Test Files
-You must provide three separate files for training, evaluation, and testing. Each file should include columns containing the text you want to extract information from (e.g., abstracts or articles) and the specific target information (e.g., authors, dates, keywords) to extract.
+### 1. Prepare Train and Evaluation Files
+You must provide three separate files for training, and evaluation. Each file should include columns containing the text from which you want to extract information (e.g., abstracts, articles) and the specific target information (e.g., authors, dates, keywords) to extract.
 
 - **Train File**: Contains the data to train the model.
 - **Evaluation File**: Contains the data for validating the model during training.
 
+Since mBART is a multilingual model, ensure that the text in each file corresponds to the appropriate language and that you specify the language codes (e.g., `fr_XX` for French, `de_DE` for German) during fine-tuning. This will allow mBART to effectively handle and extract information in the target language.
+
+
 ### 2. Load and Show Available Columns
-The first step is to load the dataset and display the available columns to let the user select the columns for text and target information. 
-You can specify the path to each file, and the code will display the available columns so you can choose which one contains the text and which 
-one contains the target information.
+The first step is to load the dataset and display the available columns, allowing the user to select which columns contain the text and target information for extraction. You can specify the path to each file (training, and evaluation), and the code will display the available columns so you can choose the one that contains the text (e.g., combined_text) and the one that contains the target information (e.g., authors, keywords).
+
+You should ensure that the text column corresponds to the appropriate language of the dataset and adjust the language codes accordingly when fine-tuning the model.
+
 
 ```python
 import pandas as pd
@@ -113,7 +114,7 @@ num_epochs = int(input("\nHow many epochs would you like to train for? (e.g., 3,
 print(f"Training for {num_epochs} epoch(s).")
 
 # Initialize the extraction model
-from FineTune_Information_Extractor_for_NLPTasks_based_T5_Small import InfoExtractionModel
+from FineTune_Information_Extractor_for_NLPTasks_based_mBART import InfoExtractionModel
 extractor = InfoExtractionModel()
 
  Ask the user for the model save path
@@ -127,6 +128,7 @@ extractor.save_fine_tuned_model(save_model_path)
 ```
 ## Load the Trained Model:
 After training the model, you can load the trained model for inference or evaluation using the following code:
+
 
 ### 1. Load a Trained Model:
 ```python
@@ -173,9 +175,10 @@ Extracted information: Francesca Magri, Camilla Chello, Giulia Pranteda, Gugliel
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+
 ## Example Usage
 
-This section provides a complete example of how to load a dataset, split it into training and validation sets, fine-tune the `T5-small` model, and evaluate it for information extraction.
+This section provides a complete example of how to load a dataset, split it into training and validation sets, fine-tune the `mBART` model, and evaluate it for information extraction.
 
 ### 1. Build and Split the Dataset
 
@@ -184,6 +187,8 @@ If you do not have a dataset, we will build one together using the `leminda-ai/s
 The example below demonstrates how to load the dataset, process it, split it into training and validation sets, and convert it into a Pandas DataFrame.
 
 Make sure the selected columns for training and validation do not contain null values.
+
+!pip install --upgrade datasets
 
 ```python
 import pandas as pd
@@ -202,7 +207,6 @@ if build_dataset == 'yes':
     # Reduce the size for demonstration purposes
 
     df = pd.DataFrame(dataset[:2000])
-    print(df.head)
 
     # Step 2: Extract author names from the 'authors' column
     def extract_author_names(authors_list):
@@ -218,6 +222,7 @@ if build_dataset == 'yes':
 
     # Step 4: Save the updated dataset to CSV
     df.to_excel('updated_s2orc_small_with_authors.xlsx', index=False)
+    print(df.head)
 
     print("Dataset updated and saved as 'updated_s2orc_small_with_authors.xlsx'.")
 
@@ -258,10 +263,11 @@ else:
 ```
 ### 2. Fine-tune and Evaluate the Model
 
-Once you have your dataset loaded and split, you can fine-tune the `T5-small` model using the following script.
+Once you have your dataset loaded and split, you can fine-tune the `mBART` model using the following script.
 
 ```python
-from FineTune_Information_Extractor_for_NLPTasks_based_T5_Small import InfoExtractionModel
+from FineTune_Information_Extractor_for_NLPTasks_based_mBART import InfoExtractionModel
+
 
 # Step 3: Create the model instance
 model = InfoExtractionModel()
@@ -307,4 +313,3 @@ new_text='Complete resolution of cutaneous larva migrans with topical ivermectin
 a=model.extract(new_text,task_instruction)
 
 ```
-

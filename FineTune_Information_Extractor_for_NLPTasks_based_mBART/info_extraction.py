@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import torch
-from transformers import T5Tokenizer, T5ForConditionalGeneration, Trainer, TrainingArguments
+from transformers import MBartTokenizer, MBartForConditionalGeneration, Trainer, TrainingArguments
 from torch.utils.data import Dataset
 import gc
 from sklearn.model_selection import train_test_split
@@ -15,7 +15,7 @@ class InfoExtractionDataset(Dataset):
         self.labels = []
         
         for text, label in zip(texts, labels):
-            input_text = f"{task_instruction}: {text}"
+            input_text = f"{task_instruction} from the following text.\n text: {text}"
             inputs = tokenizer(input_text, padding='max_length', truncation=True, max_length=max_length, return_tensors="pt")
             labels = tokenizer(label, padding='max_length', truncation=True, max_length=max_length, return_tensors="pt").input_ids
             self.inputs.append(inputs['input_ids'].squeeze(0))
@@ -28,12 +28,12 @@ class InfoExtractionDataset(Dataset):
         return {'input_ids': self.inputs[idx], 'labels': self.labels[idx]}
 
 class InfoExtractionModel:
-    def __init__(self, model_name='t5-small', cache_dir=None):
+    def __init__(self, model_name='facebook/mbart-large-cc25', cache_dir=None):
         self.model_name = model_name
         self.cache_dir = cache_dir or os.getcwd()
-        self.tokenizer = T5Tokenizer.from_pretrained(model_name, cache_dir=self.cache_dir)
+        self.tokenizer = MBartTokenizer.from_pretrained(model_name, cache_dir=self.cache_dir)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=self.cache_dir).to(self.device)
+        self.model = MBartForConditionalGeneration.from_pretrained(model_name, cache_dir=self.cache_dir).to(self.device)
 
     def train(self, texts_train, labels_train, texts_eval, labels_eval, task_instruction, num_epochs, output_dir='./info_extraction_model'):
         print(f"Training the model for task: {task_instruction} for {num_epochs} epoch(s)")
@@ -42,14 +42,15 @@ class InfoExtractionModel:
 
         training_args = TrainingArguments(
             output_dir=output_dir,
-            num_train_epochs=num_epochs,  # Use the user-defined number of epochs
+            num_train_epochs=num_epochs,
             per_device_train_batch_size=1,
             save_steps=500,
             save_total_limit=2,
             evaluation_strategy="epoch",
             logging_dir='./logs',
             learning_rate=5e-5,  
-            report_to="none"
+            report_to="none",
+            weight_decay=0.01,  # Added weight decay to prevent overfitting
         )
 
         trainer = Trainer(
@@ -76,15 +77,17 @@ class InfoExtractionModel:
         self.tokenizer.save_pretrained(output_dir)  # Save the tokenizer
         print(f"Fine-tuned model and tokenizer saved to {output_dir}")
 
-
     def load_model(self, model_dir):
-        self.model = T5ForConditionalGeneration.from_pretrained(model_dir).to(self.device)
+        self.model = MBartForConditionalGeneration.from_pretrained(model_dir).to(self.device)
         print(f"Model loaded from {model_dir}")
 
-    def extract(self, text, task_instruction):
+    def extract(self, text, task_instruction, lang_code='en_XX'):
         print(f"Extracting information based on task: {task_instruction}")
         input_text = f"{task_instruction}: {text}"
         inputs = self.tokenizer(input_text, return_tensors='pt', truncation=True, max_length=1024).to(self.device)
+        
+        # Set the decoder start token ID for the target language
+        self.model.config.decoder_start_token_id = self.tokenizer.lang_code_to_id[lang_code]
         
         with torch.no_grad():
             output_ids = self.model.generate(
@@ -109,5 +112,3 @@ class InfoExtractionModel:
         self.model.save_pretrained(output_dir)
         self.tokenizer.save_pretrained(output_dir)
         print(f"Fine-tuned model and tokenizer saved to {output_dir}")
-
-
