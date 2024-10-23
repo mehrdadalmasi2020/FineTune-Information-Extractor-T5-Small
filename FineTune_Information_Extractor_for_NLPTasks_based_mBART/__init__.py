@@ -1,2 +1,0 @@
-# FineTune_Information_Extractor_for_NLPTasks_based_mBART/__init__.py
-from .info_extraction import InfoExtractionDataset, InfoExtractionModel
